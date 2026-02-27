@@ -20,9 +20,7 @@ Scraped via the MediaWiki API. Raw data is in MediaWiki markup (wikitext), parse
 - [x] BM25 indexing & retrieval
 - [x] Semantic search
 - [x] Initial evaluation (10 queries)
-
-
-🔄 Continuously improving throughout the semester
+- [ ] Continuously improving throughout the semester
 
 ## Retrieval Methods (in progress)
 
@@ -33,6 +31,7 @@ Scraped via the MediaWiki API. Raw data is in MediaWiki markup (wikitext), parse
 ---
 
 *This is an academic project for learning purposes.*
+
 
 
 
