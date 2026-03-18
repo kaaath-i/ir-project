@@ -9,3 +9,8 @@ wheels/
 # Virtual environments
 .venv
 kochwiki_data/
+
+# Index data
+indexing/index_data/
+
+.DS_Store
