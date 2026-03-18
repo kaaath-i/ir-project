@@ -4,6 +4,10 @@ import json
 import re
 from collections import defaultdict, Counter
 from rank_bm25 import BM25Okapi
+import networkx as nx
+from sentence_transformers import SentenceTransformer
+import numpy as np  
+import faiss
 
 INDEX_DIR = "indexing/index_data"
 DATA_DIR = "data_retrieval/kochwiki_data"
@@ -14,6 +18,8 @@ def simple_tokenize(text):
     text = text.lower()
     tokens = re.findall(r'\b\w+\b', text)
     return tokens
+
+# ====== CORPUS ======
 
 def build_corpus():
     with open(f"{DATA_DIR}/rezepte_parsed.json", "r") as f:
@@ -45,6 +51,8 @@ def build_corpus():
     print(f"Corpus built with {len(corpus)} documents.")
     return corpus
 
+# ====== INVERTED INDEX ======
+
 def build_inverted_index(corpus):
     inverted_index = defaultdict(list)
     for doc_id, doc in corpus.items():
@@ -59,6 +67,8 @@ def build_inverted_index(corpus):
     print(f"Inverted index built with {len(inverted_index)} unique tokens.")
     return inverted_index
 
+# ====== BM25 ======
+
 def build_bm25(corpus):
     doc_ids = list(corpus.keys())
     tokenized_corpus = [simple_tokenize(doc["text"]) for doc in corpus.values()]
@@ -70,13 +80,7 @@ def build_bm25(corpus):
     print(f"BM25 model built with {len(doc_ids)} documents.")
     return doc_ids, bm25
 
-corpus = build_corpus()
-inverted_index = build_inverted_index(corpus)
-bm25, doc_ids = build_bm25(corpus)
-
-from sentence_transformers import SentenceTransformer
-import numpy as np  
-import faiss
+# ====== FAISS ======
 
 def build_faiss(corpus):
     model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
@@ -91,7 +95,6 @@ def build_faiss(corpus):
     index = faiss.IndexFlatL2(dimension)
     index.add(embeddings)
 
-
     faiss.write_index(index, f"{INDEX_DIR}/faiss_index.bin")
     with open(f"{INDEX_DIR}/faiss_doc_ids.pkl", "wb") as f:
         pickle.dump(doc_ids, f)
@@ -99,9 +102,7 @@ def build_faiss(corpus):
     print(f"FAISS index built with {len(doc_ids)} documents.")
     return doc_ids, index
 
-faiss_doc_ids, faiss_index = build_faiss(corpus)
-
-import networkx as nx
+# ====== KNOWLEDGE GRAPH ======
 
 def build_knowledge_graph(corpus):
     G = nx.Graph()
@@ -135,8 +136,10 @@ def build_knowledge_graph(corpus):
     print(f"Knowledge graph built with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
     return G
 
-graph = build_knowledge_graph(corpus)
-
-for f in os.listdir(INDEX_DIR):
-    size = os.path.getsize(f"{INDEX_DIR}/{f}") / (1024*1024)
-    print(f"{f}: {size:.1f} MB")
+if __name__ == "__main__":
+    corpus = build_corpus()
+    inverted_index = build_inverted_index(corpus)
+    doc_ids, bm25 = build_bm25(corpus)
+    doc_ids, faiss_index = build_faiss(corpus)
+    graph = build_knowledge_graph(corpus)
+    print("\nAll indices built successfully!")
