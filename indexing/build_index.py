@@ -8,15 +8,22 @@ import networkx as nx
 from sentence_transformers import SentenceTransformer
 import numpy as np  
 import faiss
+from nltk.corpus import stopwords
+import nltk
+nltk.download('stopwords')
 
-INDEX_DIR = "indexing/index_data"
+INDEX_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "indexing", "index_data")
 DATA_DIR = "data_retrieval/kochwiki_data"
 
 os.makedirs(INDEX_DIR, exist_ok=True)
 
-def simple_tokenize(text):
+GERMAN_STOPWORDS = set(stopwords.words('german'))
+
+def tokenize(text, remove_stopwords=True):
     text = text.lower()
     tokens = re.findall(r'\b\w+\b', text)
+    if remove_stopwords:
+        tokens = [t for t in tokens if t not in GERMAN_STOPWORDS]
     return tokens
 
 # ====== CORPUS ======
@@ -56,7 +63,7 @@ def build_corpus():
 def build_inverted_index(corpus):
     inverted_index = defaultdict(list)
     for doc_id, doc in corpus.items():
-        tokens = simple_tokenize(doc["text"])
+        tokens = tokenize(doc["text"])
         token_counts = Counter(tokens)
         for token, count in token_counts.items():
             inverted_index[token].append((doc_id, count))
@@ -71,7 +78,7 @@ def build_inverted_index(corpus):
 
 def build_bm25(corpus):
     doc_ids = list(corpus.keys())
-    tokenized_corpus = [simple_tokenize(doc["text"]) for doc in corpus.values()]
+    tokenized_corpus = [tokenize(doc["text"]) for doc in corpus.values()]
     bm25 = BM25Okapi(tokenized_corpus)
 
     with open(f"{INDEX_DIR}/bm25.pkl", "wb") as f:
