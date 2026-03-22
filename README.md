@@ -34,7 +34,8 @@ Scraped via the MediaWiki API. Raw data is in MediaWiki markup (wikitext), parse
 
 - Baseline: Simple substring matching on full-text
 - BM25: Okapi BM25 via rank-bm25
-- Semantic Search: Sentence embeddings via SentenceTransformers (paraphrase-multilingual-MiniLM-L12-v2)
+- Semantic Search: Sentence embeddings via SentenceTransformers (T-Systems-onsite/cross-en-de-roberta-sentence-transformer)
+- Knowledge Graph (NetworkX)
 
 ---
 
