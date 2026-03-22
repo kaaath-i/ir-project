@@ -2,10 +2,10 @@ import streamlit as st
 import os
 from huggingface_hub import hf_hub_download
 
-st.set_page_config(page_title="KochWiki Search", page_icon="🍳", layout="wide")
+st.set_page_config(page_title="KochWiki Suche", page_icon="🍳", layout="wide")
 
-st.title("🍳 KochWiki Search")
-st.caption("Search across 14,000+ German recipes from kochwiki.org")
+st.title("🍳 KochWiki Suche")
+st.caption("Durchsuche 14000+ Rezepte und 4000+ Zutaten von kochwiki.org")
 
 HF_REPO = "kaaath-i/kochwiki-ir-data"
 
@@ -43,11 +43,11 @@ from search.retrieval import bm25_search, faiss_search, graph_search, hybrid_sea
 
 with st.sidebar:
     st.header("🔧 Filter")
-    search_method = st.radio("Search Method", ["Hybrid", "BM25", "Semantic (FAISS)", "Graph"])
-    doc_type = st.radio("Document Type", ["Recipes only", "Ingredients only", "Both"])
-    n_results = st.slider("Number of results", 3, 20, 5)
+    search_method = st.radio("Suchmethode", ["Hybrid", "BM25", "Semantic (FAISS)", "Graph"])
+    doc_type = st.radio("Art", ["nur Rezepte", "nur Zutaten", "Beide"])
+    n_results = st.slider("Anzahl der Suchergebnisse", 3, 20, 5)
 
-    doc_type_map = {"Recipes only": "recipe", "Ingredients only": "ingredient", "Both": None}
+    doc_type_map = {"nur Rezepte": "recipe", "nur Zutaten": "ingredient", "Beide": None}
     selected_type = doc_type_map[doc_type]
 
 query = st.text_input("🔍 Was möchtest du kochen?", placeholder="z.B. Kartoffelsuppe, Curry, japanische Suppe...")
