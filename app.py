@@ -2,10 +2,10 @@ import streamlit as st
 import os
 from huggingface_hub import hf_hub_download
 
-st.set_page_config(page_title="Kochwiki Search", page_icon="🍳", layout="wide")
+st.set_page_config(page_title="KochWiki Search", page_icon="🍳", layout="wide")
 
-st.title("🍳 Kochwiki Search")
-st.caption("Semantic recipe search across 14,000+ German recipes from Kochwiki.org")
+st.title("🍳 KochWiki Search")
+st.caption("Search across 14,000+ German recipes from kochwiki.org")
 
 HF_REPO = "kaaath-i/kochwiki-ir-data"
 
