@@ -7,6 +7,13 @@ st.set_page_config(page_title="KochWiki Suche", page_icon="🍳", layout="wide")
 st.title("🍳 KochWiki Suche")
 st.caption("Durchsuche 14000+ Rezepte und 4000+ Zutaten von kochwiki.org")
 
+st.markdown("""
+<style>
+a { color: #2B1700 !important; }
+a:hover { color: #A66038 !important; }
+</style>
+""", unsafe_allow_html=True)
+
 HF_REPO = "kaaath-i/kochwiki-ir-data"
 
 @st.cache_resource
