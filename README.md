@@ -8,7 +8,7 @@ An Information Retrieval & Extraction system built on Kochwiki.org, one of the l
 Part of my Master's coursework in Information Extraction and Retrieval (Multilingual Technologies) at Hochschule Campus Wien.
 
 🔗 **Try the prototype:** [Kochwiki Search](https://kochwiki-suche.streamlit.app/)
-*Note:* The user interface is in German, as the underlying data is a German-language recipe corpus.
+(*Note:* The user interface is in German, as the underlying data is a German-language recipe corpus.)
 
 ## Data Source
 
@@ -16,7 +16,7 @@ Kochwiki.org: https://www.kochwiki.org/ (Creative Commons Attribution-ShareAlike
 
 Scraped via the MediaWiki API. Raw data is in MediaWiki markup (wikitext), parsed into structured JSON containing metadata, ingredients, preparation steps, nutritional data, and cuisine classifications.
 
-*Note:* The scraped data is not included in this repository due to file size (~150 MB). Run the [scraper](data_retrieval/kochwiki_scraper.py) to generate the data locally (**Attention**: this takes about 3 hours).  Alternatively, the dataset is available on [Hugging Face](https://huggingface.co/datasets/kaaath-i/kochwiki-ir-data/tree/main/kochwiki_data) or on [Google Drive](https://drive.google.com/drive/folders/1djCIp51luMTYEICLFRYm4aH-Ucm6IfXh?usp=drive_link)
+*Note:* The scraped data is not included in this repository due to file size (~150 MB). Run the [scraper](data_retrieval/kochwiki_scraper.py) to generate the data locally (**Attention**: this takes about 3 hours).  Alternatively, the dataset is available on [Hugging Face](https://huggingface.co/datasets/kaaath-i/kochwiki-ir-data/tree/main/kochwiki_data) or on [Google Drive](https://drive.google.com/drive/folders/1djCIp51luMTYEICLFRYm4aH-Ucm6IfXh?usp=drive_link).
 
 ## Project Status
 - [x] Data scraping & parsing
