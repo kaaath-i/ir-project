@@ -90,7 +90,7 @@ def build_bm25(corpus):
 # ====== FAISS ======
 
 def build_faiss(corpus):
-    model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+    model = SentenceTransformer('T-Systems-onsite/cross-en-de-roberta-sentence-transformer')
     doc_ids = list(corpus.keys())
     texts = [doc["text"] for doc in corpus.values()]
 

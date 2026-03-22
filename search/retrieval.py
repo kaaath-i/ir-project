@@ -42,8 +42,8 @@ def expand_query(query, synonyms=None):
     tokens = tokenize(query)
     expanded = list(tokens)
     for token in tokens:
-        if token in synonyms:
-            expanded.extend(synonyms[token][:5])
+        if f"zutat:{token}" in synonyms or token in synonyms:
+            expanded.extend(synonyms.get(token, [])[:3])
     return " ".join(expanded)
 
 # ====== LOAD ======
@@ -65,7 +65,7 @@ def load_faiss():
     index = faiss.read_index(f"{INDEX_DIR}/faiss_index.bin")
     with open(f"{INDEX_DIR}/faiss_doc_ids.pkl", "rb") as f:
         doc_ids = pickle.load(f)
-    model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+    model = SentenceTransformer('T-Systems-onsite/cross-en-de-roberta-sentence-transformer')
     print(f"FAISS loaded: {index.ntotal} vectors")
     return index, doc_ids, model
 
@@ -134,7 +134,7 @@ def graph_search(query_zutaten, graph, corpus, n=5):
 
 # ===== COMBINED SEARCH ======
 
-def hybrid_search(query, corpus, bm25_data, faiss_index, faiss_doc_ids, model, graph=None, filter_zutaten=None, n=5, bm25_weight=0.5, synonyms=None, doc_type=None):
+def hybrid_search(query, corpus, bm25_data, faiss_index, faiss_doc_ids, model, graph=None, filter_zutaten=None, n=5, bm25_weight=0.6, synonyms=None, doc_type=None):
     if synonyms:
         query = expand_query(query, synonyms)
     doc_ids, bm25 = bm25_data
