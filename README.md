@@ -7,6 +7,8 @@ An Information Retrieval & Extraction system built on Kochwiki.org, one of the l
 
 Part of my Master's coursework in Information Extraction and Retrieval (Multilingual Technologies) at Hochschule Campus Wien.
 
+🔗 **Try the prototype:** [Kochwiki Search](https://kochwiki-search.streamlit.app)
+
 ## Data Source
 
 Kochwiki.org: https://www.kochwiki.org/ (Creative Commons Attribution-ShareAlike)
