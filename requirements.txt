@@ -1,0 +1,7 @@
+streamlit
+sentence-transformers
+rank-bm25
+faiss-cpu
+networkx
+nltk
+huggingface_hub

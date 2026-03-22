@@ -1,19 +1,45 @@
 import streamlit as st
-from search.retrieval import *
+import os
+from huggingface_hub import hf_hub_download
 
 st.set_page_config(page_title="Kochwiki Search", page_icon="🍳", layout="wide")
 
 st.title("🍳 Kochwiki Search")
 st.caption("Semantic recipe search across 14,000+ German recipes from Kochwiki.org")
 
+HF_REPO = "kaaath-i/kochwiki-ir-data"
+
 @st.cache_resource
-def load_all():
+def download_and_load():
+    local_index = os.path.join("indexing", "index_data", "corpus.pkl")
+    
+    if os.path.exists(local_index):
+        os.environ["INDEX_DIR"] = os.path.join("indexing", "index_data")
+    else:
+        os.makedirs("index_data", exist_ok=True)
+        files = [
+            "index_data/corpus.pkl",
+            "index_data/inverted_index.pkl",
+            "index_data/bm25.pkl",
+            "index_data/faiss_index.bin",
+            "index_data/faiss_doc_ids.pkl",
+            "index_data/knowledge_graph.gml"
+        ]
+        for f in files:
+            hf_hub_download(repo_id=HF_REPO, filename=f, repo_type="dataset", local_dir=".")
+        os.environ["INDEX_DIR"] = "index_data"
+
+    from search.retrieval import load_indices, load_faiss, load_graph
+    
     corpus, inverted_index, bm25_data = load_indices()
     faiss_index, faiss_doc_ids, model = load_faiss()
     graph, synonyms = load_graph()
     return corpus, inverted_index, bm25_data, faiss_index, faiss_doc_ids, model, graph, synonyms
 
-corpus, inverted_index, bm25_data, faiss_index, faiss_doc_ids, model, graph, synonyms = load_all()
+corpus, inverted_index, bm25_data, faiss_index, faiss_doc_ids, model, graph, synonyms = download_and_load()
+
+from search.retrieval import bm25_search, faiss_search, graph_search, hybrid_search
+
 
 with st.sidebar:
     st.header("🔧 Filter")

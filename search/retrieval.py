@@ -12,7 +12,7 @@ from nltk.corpus import stopwords
 import nltk
 nltk.download('stopwords')
 
-INDEX_DIR = INDEX_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "indexing", "index_data")
+INDEX_DIR = os.environ.get("INDEX_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "indexing", "index_data"))
 
 GERMAN_STOPWORDS = set(stopwords.words('german'))
 
