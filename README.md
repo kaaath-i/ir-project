@@ -1,8 +1,8 @@
 ---
 title: Kochwiki Suche
 emoji: 🍳
-colorFrom: orange
-colorTo: brown
+colorFrom: yellow
+colorTo: red
 sdk: streamlit
 sdk_version: "1.55.0"
 app_file: app.py
