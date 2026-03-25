@@ -1,4 +1,4 @@
----
+<!--
 title: Kochwiki Suche
 emoji: 🍳
 colorFrom: yellow
@@ -7,7 +7,7 @@ sdk: streamlit
 sdk_version: "1.55.0"
 app_file: app.py
 pinned: false
----
+-->
 
 # KochWiki Information Retrieval System
 🚧 *Work in progress*
@@ -18,7 +18,7 @@ An Information Retrieval & Extraction system built on Kochwiki.org, one of the l
 
 Part of my Master's coursework in Information Extraction and Retrieval (Multilingual Technologies) at Hochschule Campus Wien.
 
-🔗 **Try the prototype:** [Kochwiki Search](https://kochwiki-suche.streamlit.app/)
+🔗 **Try the prototype:** [Kochwiki Search](https://huggingface.co/spaces/kaaath-i/kochwiki-suche)
 (*Note:* The user interface is in German, as the underlying data is a German-language recipe corpus.)
 
 ## Data Source
