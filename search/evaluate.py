@@ -49,6 +49,19 @@ def detailed_evaluate(search_fn, name, k=10):
     print(f"\nStrict Recall@{k}: {total_hits}/50 ({total_hits/50:.0%})")
     print(f"Queries with ≥1 hit: {queries_with_hit}/10")
 
+def r_precision(search_fn, name, r=5):
+    print(f"\n===== R-PRECISION EVALUATION: {name} =====")
+    total_rp = 0
+    
+    for query, expected in evaluation.items():
+        results = search_fn(query, n=r)
+        retrieved_titles = [title for _, title, *_ in results]
+        hits = sum(1 for doc in expected if doc in retrieved_titles)
+        total_rp += hits / r
+    
+    avg_rp = total_rp / len(evaluation)
+    print(f"\n{name}: R-Precision@{r} = {avg_rp:.3f}")
+
 if __name__ == "__main__":
     corpus, inverted_index, bm25_data = load_indices()
     faiss_index, faiss_doc_ids, model = load_faiss()
@@ -56,6 +69,5 @@ if __name__ == "__main__":
 
     evaluate(lambda q, n=10: bm25_search(q, corpus, bm25_data, n=n, synonyms=synonyms, doc_type="recipe"), "BM25")
     evaluate(lambda q, n=10: faiss_search(q, corpus, faiss_index, faiss_doc_ids, model, n=n), "FAISS")
-    evaluate(lambda q, n=10: graph_search(q.split(), graph, corpus, n=n), "Graph")
     evaluate(lambda q, n=10: hybrid_search(q, corpus, bm25_data, faiss_index, faiss_doc_ids, model, graph=graph, synonyms=synonyms, doc_type="recipe", n=n), "Hybrid")
     detailed_evaluate(lambda q, n=10: hybrid_search(q, corpus, bm25_data, faiss_index, faiss_doc_ids, model, graph=graph, synonyms=synonyms, doc_type="recipe", n=n), "Hybrid")
