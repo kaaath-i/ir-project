@@ -37,6 +37,8 @@ def build_corpus():
 
     corpus = {}
     for i, r in enumerate(recipes):
+        if not r.get("zutaten_namen") or not r.get("zubereitung_raw") or not r.get("plaintext"):
+            continue
         doc_id = f"recipe_{i}"
         corpus[doc_id] = {
             "title": r["title"],
@@ -45,6 +47,8 @@ def build_corpus():
         }
 
     for i, z in enumerate(ingredients):
+        if not z.get("plaintext"):
+            continue
         doc_id = f"ingredient_{i}"
         corpus[doc_id] = {
             "title": z["title"],
@@ -121,16 +125,22 @@ def build_knowledge_graph(corpus):
         ingredients = json.load(f)
 
     for i, r in enumerate(recipes):
-        G.add_node(f"recipe_{i}", 
+        doc_id = f"recipe_{i}"
+        if doc_id not in corpus:  
+            continue
+        G.add_node(doc_id, 
                    title=r["title"],
                    type="recipe",
                    schwierigkeit=r["metadata"]["schwierigkeit"],
                    zeit=r["metadata"]["zeit"])
 
         for zutat in r["zutaten_namen"]:
-            G.add_edge(f"recipe_{i}", f"zutat:{zutat.lower()}", relation="uses")
+            G.add_edge(doc_id, f"zutat:{zutat.lower()}", relation="uses")
     
     for i, z in enumerate(ingredients):
+        doc_id = f"ingredient_{i}"
+        if doc_id not in corpus:  
+            continue
         node_id = f"zutat:{z['name'].lower()}"
         G.add_node(node_id,
                    title=z["name"],
