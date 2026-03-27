@@ -65,7 +65,7 @@ def load_faiss():
     index = faiss.read_index(f"{INDEX_DIR}/faiss_index.bin")
     with open(f"{INDEX_DIR}/faiss_doc_ids.pkl", "rb") as f:
         doc_ids = pickle.load(f)
-    model = SentenceTransformer('T-Systems-onsite/cross-en-de-roberta-sentence-transformer')
+    model = SentenceTransformer('intfloat/multilingual-e5-base')
     print(f"FAISS loaded: {index.ntotal} vectors")
     return index, doc_ids, model
 
@@ -95,7 +95,8 @@ def bm25_search(query, corpus, bm25_data, n=5, synonyms=None, doc_type=None):
     return results
 
 def faiss_search(query, corpus, faiss_index, faiss_doc_ids, model, n=5, doc_type=None):
-    query_embedding = model.encode([query]).astype('float32')
+    query_embedding = model.encode([f"query: {query}"]).astype('float32')
+    faiss.normalize_L2(query_embedding)
     search_n = n * 3 if doc_type else n
     distances, indices = faiss_index.search(query_embedding, search_n)
 
@@ -134,43 +135,46 @@ def graph_search(query_zutaten, graph, corpus, n=5):
 
 # ===== COMBINED SEARCH ======
 
-def hybrid_search(query, corpus, bm25_data, faiss_index, faiss_doc_ids, model, graph=None, filter_zutaten=None, n=5, bm25_weight=0.6, synonyms=None, doc_type=None):
+def hybrid_search(query, corpus, bm25_data, faiss_index, faiss_doc_ids, model, graph=None, filter_zutaten=None, n=5, k=60, synonyms=None, doc_type=None):
     if synonyms:
-        query = expand_query(query, synonyms)
+        query_expanded = expand_query(query, synonyms)
+    else:
+        query_expanded = query
+    
     doc_ids, bm25 = bm25_data
-    tokenized_query = tokenize(query)
+    tokenized_query = tokenize(query_expanded)
     bm25_scores = bm25.get_scores(tokenized_query)
-    
-    max_bm25 = max(bm25_scores) if max(bm25_scores) > 0 else 1
-    bm25_norm = bm25_scores / max_bm25
+    bm25_ranking = np.argsort(bm25_scores)[::-1]
 
-    query_embedding = model.encode([query]).astype('float32')
-    distances, indices = faiss_index.search(query_embedding, len(corpus))
-    
-    faiss_scores = np.zeros(len(corpus))
-    for j, i in enumerate(indices[0]):
-        faiss_scores[i] = 1 / (1 + distances[0][j])
-    
-    max_faiss = max(faiss_scores) if max(faiss_scores) > 0 else 1
-    faiss_norm = faiss_scores / max_faiss
+    query_embedding = model.encode([f"query: {query}"]).astype('float32')
+    faiss.normalize_L2(query_embedding)
+    distances, indices = faiss_index.search(query_embedding, len(faiss_doc_ids))
 
-    combined = bm25_weight * bm25_norm + (1 - bm25_weight) * faiss_norm
-    top_indices = combined.argsort()[::-1]
+    doc_id_to_pos = {doc_id: i for i, doc_id in enumerate(doc_ids)}
+    rrf_scores = np.zeros(len(doc_ids))
+    
+    for rank, i in enumerate(bm25_ranking):
+        rrf_scores[i] += 1 / (k + rank + 1)
+    
+    for rank, i in enumerate(indices[0]):
+        doc_id = faiss_doc_ids[i]
+        if doc_id in doc_id_to_pos:
+            rrf_scores[doc_id_to_pos[doc_id]] += 1 / (k + rank + 1)
 
     if graph and filter_zutaten:
         graph_results = graph_search(filter_zutaten, graph, corpus, n=len(corpus))
         valid_docs = set(doc_id for doc_id, _ in graph_results)
         for i, doc_id in enumerate(doc_ids):
             if doc_id not in valid_docs:
-                combined[i] = -1
-                
-    top_indices = combined.argsort()[::-1]
+                rrf_scores[i] = -1
+
+    top_indices = rrf_scores.argsort()[::-1]
 
     results = []
     for i in top_indices:
         if doc_type and corpus[doc_ids[i]]["type"] != doc_type:
             continue
-        results.append((doc_ids[i], corpus[doc_ids[i]]["title"], combined[i]))
+        results.append((doc_ids[i], corpus[doc_ids[i]]["title"], rrf_scores[i]))
         if len(results) >= n:
             break
     return results

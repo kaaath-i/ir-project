@@ -5,7 +5,7 @@ from huggingface_hub import hf_hub_download
 st.set_page_config(page_title="KochWiki Suche", page_icon="🍳", layout="wide")
 
 st.title("🍳 KochWiki Suche")
-st.caption("Durchsuche 14000+ Rezepte und 4000+ Zutaten von kochwiki.org")
+st.caption("Durchsuche 8000+ Rezepte von kochwiki.org")
 
 st.markdown("""
 <style>
@@ -47,15 +47,10 @@ corpus, inverted_index, bm25_data, faiss_index, faiss_doc_ids, model, graph, syn
 
 from search.retrieval import bm25_search, faiss_search, graph_search, hybrid_search
 
-
 with st.sidebar:
     st.header("🔧 Filter")
     search_method = st.radio("Suchmethode", ["Hybrid", "BM25", "Semantic (FAISS)", "Graph"])
-    doc_type = st.radio("Art", ["nur Rezepte", "nur Zutaten", "Beide"])
     n_results = st.slider("Anzahl der Suchergebnisse", 3, 20, 5)
-
-    doc_type_map = {"nur Rezepte": "recipe", "nur Zutaten": "ingredient", "Beide": None}
-    selected_type = doc_type_map[doc_type]
 
 query = st.text_input("🔍 Was möchtest du kochen?", placeholder="z.B. Kartoffelsuppe, Curry, japanische Suppe...")
 
@@ -65,15 +60,15 @@ if search_method == "Graph":
 if query or (search_method == "Graph" and 'zutaten_input' in dir() and zutaten_input):
     
     if search_method == "BM25":
-        results = bm25_search(query, corpus, bm25_data, n=n_results, synonyms=synonyms, doc_type=selected_type)
+        results = bm25_search(query, corpus, bm25_data, n=n_results, synonyms=synonyms)
     elif search_method == "Semantic (FAISS)":
-        results = faiss_search(query, corpus, faiss_index, faiss_doc_ids, model, n=n_results, doc_type=selected_type)
+        results = faiss_search(query, corpus, faiss_index, faiss_doc_ids, model, n=n_results)
     elif search_method == "Graph":
         zutaten = [z.strip() for z in zutaten_input.split(",")]
         results = graph_search(zutaten, graph, corpus, n=n_results)
     else:
-        results = hybrid_search(query, corpus, bm25_data, faiss_index, faiss_doc_ids, model, 
-                                synonyms=synonyms, doc_type=selected_type, n=n_results)
+        results = hybrid_search(query, corpus, bm25_data, faiss_index, faiss_doc_ids, model,
+                                synonyms=synonyms, n=n_results)
 
     st.markdown(f"### Results ({len(results)})")
     

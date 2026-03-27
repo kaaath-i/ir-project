@@ -32,9 +32,6 @@ def build_corpus():
     with open(f"{DATA_DIR}/rezepte_parsed.json", "r") as f:
         recipes = json.load(f)
 
-    with open(f"{DATA_DIR}/zutaten_parsed.json", "r") as f:
-        ingredients = json.load(f)
-
     corpus = {}
     for i, r in enumerate(recipes):
         if not r.get("zutaten_namen") or not r.get("zubereitung_raw") or not r.get("plaintext"):
@@ -44,16 +41,6 @@ def build_corpus():
             "title": r["title"],
             "text": r["plaintext"],
             "type": "recipe"
-        }
-
-    for i, z in enumerate(ingredients):
-        if not z.get("plaintext"):
-            continue
-        doc_id = f"ingredient_{i}"
-        corpus[doc_id] = {
-            "title": z["title"],
-            "text": z["plaintext"],
-            "type": "ingredient"
         }
 
     with open(f"{INDEX_DIR}/corpus.pkl", "wb") as f:
@@ -94,23 +81,26 @@ def build_bm25(corpus):
 # ====== FAISS ======
 
 def build_faiss(corpus):
-    model = SentenceTransformer('T-Systems-onsite/cross-en-de-roberta-sentence-transformer')
-    doc_ids = list(corpus.keys())
-    texts = [doc["text"] for doc in corpus.values()]
+    model = SentenceTransformer('intfloat/multilingual-e5-base')
+    
+    recipe_items = [(doc_id, doc) for doc_id, doc in corpus.items() if doc["type"] == "recipe"]
+    doc_ids = [item[0] for item in recipe_items]
+    texts = [f"passage: {item[1]['text']}" for item in recipe_items]
 
-    print("Encoding documents...")
+    print(f"Encoding {len(texts)} recipes...")
     embeddings = model.encode(texts, show_progress_bar=True)
     embeddings = np.array(embeddings).astype('float32')
-
-    dimension = embeddings.shape[1]
-    index = faiss.IndexFlatL2(dimension)
-    index.add(embeddings)
-
-    faiss.write_index(index, f"{INDEX_DIR}/faiss_index.bin")
+    faiss.normalize_L2(embeddings)
+    
+    np.save(f"{INDEX_DIR}/embeddings.npy", embeddings)
     with open(f"{INDEX_DIR}/faiss_doc_ids.pkl", "wb") as f:
         pickle.dump(doc_ids, f)
 
-    print(f"FAISS index built with {len(doc_ids)} documents.")
+    index = faiss.IndexFlatIP(embeddings.shape[1])
+    index.add(embeddings)
+    faiss.write_index(index, f"{INDEX_DIR}/faiss_index.bin")
+    
+    print(f"FAISS index built with {index.ntotal} vectors.")
     return doc_ids, index
 
 # ====== KNOWLEDGE GRAPH ======
