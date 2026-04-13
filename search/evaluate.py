@@ -13,12 +13,12 @@ evaluation = {
     "Rezepte mit Kartoffeln, Zwiebeln und Speck": ["Bratkartoffeln", "Bauernfrühstück", "Himmel und Erde", "Kartoffelpfanne mit Käse", "Döppekoche"],
 }
 
-def evaluate(search_fn, name):
+def evaluate(search_fn, name, k=10):
     total_hits = 0
     queries_with_hit = 0
     
     for query, expected in evaluation.items():
-        results = search_fn(query)
+        results = search_fn(query, n=k)
         retrieved_titles = [title for _, title, *_ in results]
         hits = sum(1 for doc in expected if doc in retrieved_titles)
         total_hits += hits
