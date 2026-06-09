@@ -51,10 +51,53 @@ from search.retrieval import bm25_search, faiss_search, graph_search, hybrid_sea
 from search.rag import rag_search
 
 # ====== TABS ======
-tab1, tab2 = st.tabs(["🔍 Rezeptsuche", "👨‍🍳 Koch-Assistent"])
+tab1, tab2 = st.tabs(["🧑🏼‍🍳🐀 RAGatouille"], ["🔍 Einfache Suche"])
+
+# ====== TAB 2: KOCH-ASSISTENT ======
+with tab1:
+    st.caption("Stelle Fragen, bitte um Rezeptempfehlungen oder sag 'gib mir ein anderes Rezept'.")
+
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+    if "messages_display" not in st.session_state:
+        st.session_state.messages_display = []
+
+    for message in st.session_state.messages_display:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    if prompt := st.chat_input("Frag deinen Koch-Assistenten..."):
+ 
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        st.session_state.messages_display.append({"role": "user", "content": prompt})
+
+        with st.chat_message("assistant"):
+            with st.status("🍲 In Zubereitung...") as status:
+                answer, sources, st.session_state.chat_history = rag_search(
+                    prompt, corpus, bm25_data, faiss_index, faiss_doc_ids, model,
+                    generator, graph=graph, synonyms=synonyms,
+                    chat_history=st.session_state.chat_history
+                )
+                status.update(label="Fertig!", state="complete")
+            
+            st.markdown(answer)
+            
+            with st.expander("📚 Verwendete Rezepte"):
+                for doc_id, title, score in sources:
+                    wiki_url = f"https://www.kochwiki.org/wiki/{title.replace(' ', '_')}"
+                    st.markdown(f"- [{title}]({wiki_url})")
+
+        st.session_state.messages_display.append({"role": "assistant", "content": answer})
+
+    if st.session_state.messages_display:
+        if st.button("🗑️ Chat zurücksetzen"):
+            st.session_state.chat_history = []
+            st.session_state.messages_display = []
+            st.rerun()
 
 # ====== TAB 1: SUCHE ======
-with tab1:
+with tab2:
     with st.sidebar:
         st.header("🔧 Filter")
         search_method = st.radio("Suchmethode", ["Hybrid", "BM25", "Semantic (FAISS)", "Graph"])
@@ -99,45 +142,3 @@ with tab1:
                         st.metric("Score", f"{score:.3f}")
                 st.divider()
 
-# ====== TAB 2: KOCH-ASSISTENT ======
-with tab2:
-    st.caption("Stelle Fragen, bitte um Rezeptempfehlungen oder sag 'gib mir ein anderes Rezept'.")
-
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
-    if "messages_display" not in st.session_state:
-        st.session_state.messages_display = []
-
-    for message in st.session_state.messages_display:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-
-    if prompt := st.chat_input("Frag deinen Koch-Assistenten..."):
- 
-        with st.chat_message("user"):
-            st.markdown(prompt)
-        st.session_state.messages_display.append({"role": "user", "content": prompt})
-
-        with st.chat_message("assistant"):
-            with st.status("🍳 In Zubereitung...") as status:
-                answer, sources, st.session_state.chat_history = rag_search(
-                    prompt, corpus, bm25_data, faiss_index, faiss_doc_ids, model,
-                    generator, graph=graph, synonyms=synonyms,
-                    chat_history=st.session_state.chat_history
-                )
-                status.update(label="✅ Fertig!", state="complete")
-            
-            st.markdown(answer)
-            
-            with st.expander("📚 Verwendete Rezepte"):
-                for doc_id, title, score in sources:
-                    wiki_url = f"https://www.kochwiki.org/wiki/{title.replace(' ', '_')}"
-                    st.markdown(f"- [{title}]({wiki_url})")
-
-        st.session_state.messages_display.append({"role": "assistant", "content": answer})
-
-    if st.session_state.messages_display:
-        if st.button("🗑️ Chat zurücksetzen"):
-            st.session_state.chat_history = []
-            st.session_state.messages_display = []
-            st.rerun()
