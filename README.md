@@ -1,4 +1,4 @@
-<!--
+---
 title: Kochwiki Suche
 emoji: 🍳
 colorFrom: yellow
@@ -7,7 +7,7 @@ sdk: streamlit
 sdk_version: "1.55.0"
 app_file: app.py
 pinned: false
--->
+---
 
 # KochWiki Information Retrieval System
 🚧 *Work in progress*
