@@ -2,8 +2,8 @@ from haystack.components.builders import ChatPromptBuilder
 from haystack.dataclasses import ChatMessage
 from haystack.components.generators.chat import HuggingFaceAPIChatGenerator
 from search.retrieval import hybrid_search
-from dotenv import load_dotenv
-load_dotenv(override=True)
+#from dotenv import load_dotenv
+#load_dotenv(override=True)
 import os
 from haystack.utils import Secret
 
@@ -13,10 +13,6 @@ Beantworte Fragen basierend auf den gefundenen Rezepten.
 Wenn du gebeten wirst ein anderes Rezept zu zeigen, schlage eine Alternative vor.
 Antworte immer auf Deutsch."""
 
-from dotenv import load_dotenv
-load_dotenv(override=True)
-import os
-from haystack.utils import Secret
 
 def load_rag():
     generator = HuggingFaceAPIChatGenerator(

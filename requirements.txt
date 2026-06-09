@@ -1,8 +1,10 @@
 streamlit
+huggingface-hub
 sentence-transformers
-rank-bm25
 faiss-cpu
+rank-bm25
 networkx
 nltk
-huggingface_hub
+numpy
 haystack-ai
+python-dotenv
