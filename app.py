@@ -51,7 +51,7 @@ from search.retrieval import bm25_search, faiss_search, graph_search, hybrid_sea
 from search.rag import rag_search
 
 # ====== TABS ======
-tab1, tab2 = st.tabs(["🧑🏼‍🍳🐀 RAGatouille"], ["🔍 Einfache Suche"])
+tab1, tab2 = st.tabs(["🧑🏼‍🍳🐀 RAGatouille", "🔍 Einfache Suche"])
 
 # ====== TAB 2: KOCH-ASSISTENT ======
 with tab1:
@@ -66,7 +66,7 @@ with tab1:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    if prompt := st.chat_input("Frag deinen Koch-Assistenten..."):
+    if prompt := st.chat_input("Frag RAGatouille..."):
  
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -83,7 +83,7 @@ with tab1:
             
             st.markdown(answer)
             
-            with st.expander("📚 Verwendete Rezepte"):
+            with st.expander("📜 Genannte Rezepte"):
                 for doc_id, title, score in sources:
                     wiki_url = f"https://www.kochwiki.org/wiki/{title.replace(' ', '_')}"
                     st.markdown(f"- [{title}]({wiki_url})")
