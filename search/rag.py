@@ -1,7 +1,11 @@
 from haystack.components.builders import ChatPromptBuilder
 from haystack.dataclasses import ChatMessage
 from haystack.components.generators.chat import HuggingFaceAPIChatGenerator
-from retrieval import hybrid_search
+from search.retrieval import hybrid_search
+from dotenv import load_dotenv
+load_dotenv(override=True)
+import os
+from haystack.utils import Secret
 
 SYSTEM_PROMPT = """Du bist ein hilfreicher Kochassistent basierend auf KochWiki. 
 Du hilfst Nutzern beim Finden und Verstehen von Rezepten.
