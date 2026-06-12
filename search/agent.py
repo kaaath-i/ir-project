@@ -1,5 +1,5 @@
 import os
-from smolagents import tool, CodeAgent, InferenceClientModel
+from smolagents import tool, ToolCallingAgent, InferenceClientModel
 from search.retrieval import hybrid_search, load_indices, load_faiss, load_graph
 
 _corpus = None
@@ -40,11 +40,12 @@ def recipe_search(query: str) -> str:
     return build_context(results, _corpus)
 
 def load_agent():
-    agent = CodeAgent(
+    agent = ToolCallingAgent(
         tools=[recipe_search],
         model=InferenceClientModel(
             model_id="meta-llama/Llama-3.3-70B-Instruct",
-            token=os.environ.get("HF_TOKEN")
+            token=os.environ.get("GROQ_API_KEY"),
+            provider="groq"
         )
     )
     return agent
@@ -52,8 +53,21 @@ def load_agent():
 
 def agent_search(query, agent):
     response = agent.run(
-        f"Suche nach Rezepten für: {query}. "
-        f"Gib nur die exakten Titel der gefundenen Rezepte zurück, kommagetrennt, keine Erklärung."
+        f"Suche nach Rezepten für: '{query}'. "
+        f"Antworte NUR mit den exakten Rezepttiteln, kommagetrennt. "
+        f"Beispiel: 'Kartoffelsuppe, Lauch-Kartoffelsuppe'. "
+        f"Keine Erklärung, kein anderer Text, nur Titel."
     )
-    titles = [t.strip() for t in str(response).split(",")]
+    raw = str(response).strip()
+    print(f"Agent raw response: {repr(raw)}")
+    
+    if "keine" in raw.lower() or "gefunden" in raw.lower() or len(raw) > 200:
+        print("Agent Fallback → hybrid search")
+        results = hybrid_search(query, _corpus, _bm25_data, _faiss_index, _faiss_doc_ids, _model,
+                               graph=_graph, synonyms=_synonyms, n=3)
+        titles = [title for _, title, _ in results]
+    else:
+        titles = [t.strip() for t in raw.split(",")]
+    
+    print(f"Parsed titles: {titles}")
     return titles

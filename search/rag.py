@@ -1,76 +1,58 @@
-from haystack.components.builders import ChatPromptBuilder
-from haystack.dataclasses import ChatMessage
-from haystack.components.generators.chat import HuggingFaceAPIChatGenerator
+from groq import Groq
 from search.retrieval import hybrid_search
 #from dotenv import load_dotenv
 #load_dotenv(override=True)
 import os
-from haystack.utils import Secret
 
 SYSTEM_PROMPT = """Du bist RAGatouille, ein cooler Kochassistent basierend auf KochWiki.
-Du duzt den User immer.
-Schreib locker und freundlich, nicht zu förmlich.
-Wenn die gefundenen Rezepte nicht zur Anfrage passen, sag das ehrlich und schlage eine Alternative vor.
-Erfinde keine Eigenschaften die nicht in den Rezepten stehen.
+WICHTIG: Du duzt den User IMMER. Niemals "Sie", immer "du/dich/dir".
+Schreib locker und freundlich, wie ein Kumpel der gut kochen kann.
+Wenn du nach Rezepten suchst, gib nur die exakten Titel zurück, kommagetrennt.
 Antworte immer auf Deutsch."""
 
-
 def load_rag():
-    generator = HuggingFaceAPIChatGenerator(
-        api_type="serverless_inference_api",
-        api_params={"model": "meta-llama/Llama-3.3-70B-Instruct"},
-        generation_kwargs={"max_tokens": 512},
-        token=Secret.from_env_var("HF_TOKEN")
-    )
-    generator.warm_up()
-    return generator
-
-def load_rag():
-    generator = HuggingFaceAPIChatGenerator(
-        api_type="serverless_inference_api",
-        api_params={"model": "meta-llama/Llama-3.3-70B-Instruct"},
-        generation_kwargs={"max_tokens": 512},
-        token=Secret.from_env_var("HF_TOKEN")
-    )
-    generator.warm_up()
-    return generator
-
-def build_context(results, corpus):
-    context = ""
-    for doc_id, title, score in results:
-        context += f"---\n{corpus[doc_id]['text']}\n---\n"
-    return context
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+    return client
 
 def rag_from_agent(query, titles, corpus, generator, chat_history=None):
     documents = []
     for doc_id, doc in corpus.items():
-        if doc["title"] in titles:
-            documents.append(f"Titel: {doc['title']}\n{doc['text'][:500]}")
-    
+        for title in titles:
+            if title.lower() in doc["title"].lower() or doc["title"].lower() in title.lower():
+                documents.append(f"Titel: {doc['title']}\n{doc['text'][:500]}")
+                break
+
     if not documents:
-        return "Leider konnte ich keine passenden Rezepte finden.", []
+        return "Hmm, da hab ich leider gar nichts gefunden. Versuch mal eine andere Suchanfrage!", []
 
     context = "\n---\n".join(documents)
     
-    messages = [ChatMessage.from_system(SYSTEM_PROMPT)]
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     
     if chat_history:
-        messages.extend(chat_history)
+        messages.extend(chat_history[-4:])
     
-    user_message = f"""Gefundene Rezepte:
+    messages.append({"role": "user", "content": f"""Gefundene Rezepte:
 {context}
 
 Frage: {query}
 
-Gib eine hilfreiche Antwort mit Rezeptname, kurzer Beschreibung und Link im Format:
-🔗 [Rezeptname](https://www.kochwiki.org/wiki/{{Rezeptname.replace(' ', '_')}})"""
+Wenn die Rezepte nicht exakt passen, sag das kurz und schlage sie trotzdem als Alternativen vor.
+Verlink die Rezepte im Format: [Rezepttitel](https://www.kochwiki.org/wiki/Rezepttitel_mit_Unterstrichen)"""})
+
+    response = generator.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=messages,
+        max_tokens=512
+    )
     
-    messages.append(ChatMessage.from_user(user_message))
-    response = generator.run(messages)
-    answer = response["replies"][0].text
-    
+    answer = response.choices[0].message.content
+
+    import re
+    answer = re.sub(r'\[([^\]]+)\]', lambda m: '[' + m.group(1).replace('_', ' ') + ']', answer)
+
     updated_history = list(chat_history) if chat_history else []
-    updated_history.append(ChatMessage.from_user(user_message))
-    updated_history.append(ChatMessage.from_assistant(answer))
-    
+    updated_history.append({"role": "user", "content": messages[-1]["content"]})
+    updated_history.append({"role": "assistant", "content": answer})
+
     return answer, updated_history
