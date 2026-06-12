@@ -111,12 +111,17 @@ if prompt := st.chat_input("Frag RAGatouille..."):
 
     with st.chat_message("assistant"):
         with st.status("🍲 In Zubereitung...") as status:
-            titles = agent_search(prompt, agent)
-            answer, st.session_state.chat_history = rag_from_agent(
-                prompt, titles, corpus, generator,
-                chat_history=st.session_state.chat_history
-            )
-            status.update(label="✅ Fertig!", state="complete")
+            try:
+                titles = agent_search(prompt, agent)
+                answer, st.session_state.chat_history = rag_from_agent(
+                    prompt, titles, corpus, generator,
+                    chat_history=st.session_state.chat_history
+                )
+                status.update(label="✅ Fertig!", state="complete")
+            except Exception as e:
+                answer = f"Ups, da ist was schiefgelaufen 😅 Versuch es nochmal!"
+                status.update(label="❌ Fehler", state="error")
+                print(f"Error: {e}")
         
         st.markdown(answer)
         
