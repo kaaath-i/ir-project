@@ -8,3 +8,4 @@ nltk
 numpy
 haystack-ai
 python-dotenv
+smolagents
