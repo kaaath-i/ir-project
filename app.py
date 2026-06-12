@@ -9,8 +9,34 @@ st.caption("Dein persönlicher Kochassistent. Frag nach Rezepten, lass dir Alter
 
 st.markdown("""
 <style>
+/* Hintergrund */
+.stApp {
+    background-color: #e6f0e0;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background-color: #f4eadc;
+}
+
+/* Schriftfarbe global */
+html, body, [class*="css"] {
+    color: #2d2a29;
+}
+
+/* Links */
 a { color: #2B1700 !important; }
 a:hover { color: #A66038 !important; }
+
+/* Chat Bot Icon */
+[data-testid="stChatMessageAvatarAssistant"] {
+    background-color: #e8d5b9 !important;
+}
+
+/* Chat User Icon */
+[data-testid="stChatMessageAvatarUser"] {
+    background-color: #56643d !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
