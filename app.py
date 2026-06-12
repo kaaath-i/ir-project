@@ -9,34 +9,8 @@ st.caption("Dein persönlicher Kochassistent. Frag nach Rezepten, lass dir Alter
 
 st.markdown("""
 <style>
-/* Hintergrund komplett */
-.stApp, .stApp > div, .main, .block-container {
-    background-color: #e6f0e0;
-}
-
-/* Header */
-header[data-testid="stHeader"] {
-    background-color: #e6f0e0;
-}
-
-/* Footer */
-footer, .st-emotion-cache-footer {
-    background-color: #e6f0e0 !important;
-}
-
-/* Sidebar */
-[data-testid="stSidebar"], [data-testid="stSidebar"] > div {
-    background-color: #f4eadc !important;
-}
-
-/* Schriftfarbe */
-html, body, [class*="css"], p, h1, h2, h3, label {
-    color: #2d2a29 !important;
-}
-
-/* Links */
-a { color: #2B1700 !important; }
-a:hover { color: #A66038 !important; }
+a { color: #e6f0e0 !important; }
+a:hover { color: #f4eadc !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -133,7 +107,7 @@ if prompt := st.chat_input("Frag RAGatouille..."):
 
     st.session_state.messages_display.append({"role": "assistant", "content": answer})
 
-# Chat Reset
+# Chat 
 if st.session_state.messages_display:
     if st.button("🗑️ Chat zurücksetzen"):
         st.session_state.chat_history = []
