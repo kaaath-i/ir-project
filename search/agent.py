@@ -1,5 +1,5 @@
 import os
-from smolagents import tool, ToolCallingAgent, InferenceClientModel
+from smolagents import tool, CodeAgent, InferenceClientModel
 from search.retrieval import hybrid_search, load_indices, load_faiss, load_graph
 
 _corpus = None
@@ -40,7 +40,7 @@ def recipe_search(query: str) -> str:
     return build_context(results, _corpus)
 
 def load_agent():
-    agent = ToolCallingAgent(
+    agent = CodeAgent(
         tools=[recipe_search],
         model=InferenceClientModel(
             model_id="meta-llama/Llama-3.3-70B-Instruct",
