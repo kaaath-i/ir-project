@@ -9,3 +9,4 @@ numpy
 haystack-ai
 python-dotenv
 smolagents
+groq-client
