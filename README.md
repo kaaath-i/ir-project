@@ -1,4 +1,4 @@
----
+<!---
 title: RAGatouille
 emoji: 🐀
 colorFrom: green
@@ -7,7 +7,7 @@ sdk: streamlit
 sdk_version: "1.55.0"
 app_file: app.py
 pinned: false
----
+-->
 
 # RAGatouille 🐀
 *Your personal cooking assistant!*
