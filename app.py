@@ -14,29 +14,27 @@ st.markdown("""
     background-color: #e6f0e0;
 }
 
+/* Header und Footer */
+header[data-testid="stHeader"] {
+    background-color: #e6f0e0;
+}
+footer {
+    background-color: #e6f0e0;
+}
+
 /* Sidebar */
 [data-testid="stSidebar"] {
     background-color: #f4eadc;
 }
 
-/* Schriftfarbe global */
-html, body, [class*="css"] {
-    color: #2d2a29;
+/* Schriftfarbe */
+html, body, [class*="css"], p, h1, h2, h3 {
+    color: #2d2a29 !important;
 }
 
 /* Links */
 a { color: #2B1700 !important; }
 a:hover { color: #A66038 !important; }
-
-/* Chat Bot Icon */
-[data-testid="stChatMessageAvatarAssistant"] {
-    background-color: #e8d5b9 !important;
-}
-
-/* Chat User Icon */
-[data-testid="stChatMessageAvatarUser"] {
-    background-color: #56643d !important;
-}
 </style>
 """, unsafe_allow_html=True)
 
