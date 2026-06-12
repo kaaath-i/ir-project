@@ -9,22 +9,8 @@ st.caption("Dein persönlicher Kochassistent. Frag nach Rezepten, lass dir Alter
 
 st.markdown("""
 <style>
-.stApp {
-    background-color: #e6f0e0 !important;
-}
-#root > div:nth-child(1) > div > div > div > div {
-    background-color: #e6f0e0 !important;
-}
-[data-testid="stToolbar"] {
-    background-color: #e6f0e0 !important;
-}
-[data-testid="stDecoration"] {
-    background-color: #e6f0e0 !important;
-    display: none;
-}
-footer {
-    display: none !important;
-}
+a { color: #2B1700 !important; }
+a:hover { color: #A66038 !important; }
 </style>
 """, unsafe_allow_html=True)
 
