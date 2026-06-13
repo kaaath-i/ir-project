@@ -1,5 +1,6 @@
 import os
 from smolagents import tool, CodeAgent, InferenceClientModel
+from dotenv import load_dotenv
 from search.retrieval import hybrid_search, load_indices, load_faiss, load_graph
 
 _corpus = None
@@ -33,11 +34,26 @@ def recipe_search(query: str) -> str:
     Args:
         query: The search query for recipes, e.g. 'vegetarisches Gulasch' or 'schnelles Pastagericht'
     """
-    results = hybrid_search(
-        query, _corpus, _bm25_data, _faiss_index, _faiss_doc_ids, _model,
-        graph=_graph, synonyms=_synonyms, n=3
-    )
-    return build_context(results, _corpus)
+    try:
+        results = hybrid_search(
+            query,
+            _corpus,
+            _bm25_data,
+            _faiss_index,
+            _faiss_doc_ids,
+            _model,
+            graph=_graph,
+            synonyms=_synonyms,
+            n=3
+        )
+
+        if not results:
+            return "NO_RESULTS"
+
+        return build_context(results, _corpus)
+
+    except Exception as e:
+        return f"ERROR: {str(e)}"
 
 def load_agent():
     agent = CodeAgent(
@@ -45,29 +61,74 @@ def load_agent():
         model=InferenceClientModel(
             model_id="meta-llama/Llama-3.3-70B-Instruct",
             token=os.environ.get("GROQ_API_KEY"),
-            provider="groq"
-        )
+            provider="groq",
+            timeout=20
+            ),
+        max_steps=3
     )
     return agent
 
 
 def agent_search(query, agent):
-    response = agent.run(
-        f"Suche nach Rezepten für: '{query}'. "
-        f"Antworte NUR mit den exakten Rezepttiteln, kommagetrennt. "
-        f"Beispiel: 'Kartoffelsuppe, Lauch-Kartoffelsuppe'. "
-        f"Keine Erklärung, kein anderer Text, nur Titel."
-    )
-    raw = str(response).strip()
-    print(f"Agent raw response: {repr(raw)}")
-    
-    if "keine" in raw.lower() or "gefunden" in raw.lower() or len(raw) > 200:
-        print("Agent Fallback → hybrid search")
-        results = hybrid_search(query, _corpus, _bm25_data, _faiss_index, _faiss_doc_ids, _model,
-                               graph=_graph, synonyms=_synonyms, n=3)
-        titles = [title for _, title, _ in results]
-    else:
-        titles = [t.strip() for t in raw.split(",")]
-    
-    print(f"Parsed titles: {titles}")
-    return titles
+    try:
+        prompt = (
+            f"Finde passende Rezepte für: {query}. "
+            f"Gib die besten Rezeptnamen zurück. "
+            f"Wenn keine gefunden werden, sag 'keine gefunden'."
+        )
+
+        response = agent.run(prompt)
+
+        if not response:
+            return []
+
+        raw = str(response).strip()
+        print(f"Agent raw response: {raw}")
+
+        if "keine" in raw.lower() or "no_results" in raw.lower() or "error" in raw.lower():
+            results = hybrid_search(
+                query,
+                _corpus,
+                _bm25_data,
+                _faiss_index,
+                _faiss_doc_ids,
+                _model,
+                graph=_graph,
+                synonyms=_synonyms,
+                n=3
+            )
+            return [title for _, title, _ in results]
+
+        titles = [t.strip() for t in raw.replace("\n", ",").split(",") if t.strip()]
+
+        if len(titles) == 0:
+            results = hybrid_search(
+                query,
+                _corpus,
+                _bm25_data,
+                _faiss_index,
+                _faiss_doc_ids,
+                _model,
+                graph=_graph,
+                synonyms=_synonyms,
+                n=3
+            )
+            return [title for _, title, _ in results]
+
+        return titles
+
+    except Exception as e:
+        print(f"Agent error: {e}")
+
+        results = hybrid_search(
+            query,
+            _corpus,
+            _bm25_data,
+            _faiss_index,
+            _faiss_doc_ids,
+            _model,
+            graph=_graph,
+            synonyms=_synonyms,
+            n=3
+        )
+        return [title for _, title, _ in results]

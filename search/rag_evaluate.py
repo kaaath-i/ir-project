@@ -18,8 +18,8 @@ rag_evaluation = [
 ]
 
 for item in rag_evaluation:
-    answer, sources, _ = rag_from_agent(
-        item["query"], item["expected_keywords"], corpus, generator, chat_history=None
+    answer, sources, _ = rag_search(
+        item["query"], corpus, bm25_data, faiss_index, faiss_doc_ids, model, generator, chat_history=None
     )
     hits = sum(1 for kw in item["expected_keywords"] if kw.lower() in answer.lower())
     print(f"Query: {item['query']}")

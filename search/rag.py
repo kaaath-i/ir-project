@@ -1,7 +1,7 @@
 from groq import Groq
-from search.retrieval import hybrid_search
-#from dotenv import load_dotenv
-#load_dotenv(override=True)
+from retrieval import hybrid_search
+from dotenv import load_dotenv
+load_dotenv(override=True)
 import os
 
 SYSTEM_PROMPT = """Du bist RAGatouille, ein cooler Kochassistent basierend auf KochWiki.

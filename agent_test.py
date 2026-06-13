@@ -13,6 +13,7 @@ graph, synonyms = load_graph()
 from search.agent import init_agent_resources
 init_agent_resources(corpus, bm25_data, faiss_index, faiss_doc_ids, model, graph, synonyms)
 
+
 agent = load_agent()
 generator = load_rag()
 
