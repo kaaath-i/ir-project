@@ -128,8 +128,8 @@ if prompt := st.chat_input("Frag RAGatouille..."):
         with st.expander("📜 Verwendete Rezepte"):
             for title in titles:
                 clean_title = title.strip("[]'\"")
-                wiki_url = f"https://www.kochwiki.org/wiki/{title.replace(' ', '_')}"
-                st.markdown(f"- [{title}]({wiki_url})")
+                wiki_url = f"https://www.kochwiki.org/wiki/{clean_title.replace(' ', '_')}"
+                st.markdown(f"- [{clean_title}]({wiki_url})")
 
     st.session_state.messages_display.append({"role": "assistant", "content": answer})
 
