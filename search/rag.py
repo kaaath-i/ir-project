@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 import os
 
-SYSTEM_PROMPT = """Du bist RAGatouille, ein cooler Kochassistent basierend auf KochWiki.
+SYSTEM_PROMPT = """Du bist RAGatouille, ein cooler Kochassistent.
 WICHTIG: Du duzt den User IMMER. Niemals "Sie", immer "du/dich/dir".
 Schreib locker und freundlich, wie ein Kumpel der gut kochen kann — nicht zu förmlich, nicht zu steif.
 Wenn du nach Rezepten suchst, gib nur die exakten Titel zurück, kommagetrennt.
@@ -21,7 +21,7 @@ def rag_from_agent(query, titles, corpus, generator, chat_history=None):
     for doc_id, doc in corpus.items():
         for title in titles:
             if title.lower() in doc["title"].lower() or doc["title"].lower() in title.lower():
-                documents.append(f"Titel: {doc['title']}\n{doc['text'][:500]}")
+                documents.append(f"Titel: {doc['title']}\n{doc['text'][:200]}")
                 break
 
     if not documents:
@@ -32,7 +32,7 @@ def rag_from_agent(query, titles, corpus, generator, chat_history=None):
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     
     if chat_history:
-        messages.extend(chat_history[-4:])
+        messages.extend(chat_history[-1:])
     
     messages.append({"role": "user", "content": f"""Gefundene Rezepte:
 {context}
