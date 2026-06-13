@@ -1,5 +1,5 @@
 from groq import Groq
-from retrieval import hybrid_search
+from search.retrieval import hybrid_search
 from dotenv import load_dotenv
 load_dotenv(override=True)
 import os
