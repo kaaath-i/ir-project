@@ -39,7 +39,7 @@ Scraped via the MediaWiki API. Raw data is in MediaWiki markup (wikitext), parse
 
 **RAG Pipeline**
 - Agent (smolagents) — iterative search using Hybrid Search as a tool
-- Generation — Groq API (`llama-3.3-70b-versatile`)
+- Generation — Groq API (`qwen/qwen3.8-27b`)
 - Chat History — multi-turn conversation support
 
 ---
