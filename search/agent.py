@@ -1,5 +1,5 @@
 import os
-from smolagents import tool, CodeAgent, InferenceClientModel
+from smolagents import tool, CodeAgent, OpenAIServerModel
 from dotenv import load_dotenv
 from search.retrieval import hybrid_search, load_indices, load_faiss, load_graph
 
@@ -58,11 +58,11 @@ def recipe_search(query: str) -> str:
 def load_agent():
     agent = CodeAgent(
         tools=[recipe_search],
-        model=InferenceClientModel(
-            model_id="meta-llama/Llama-3.3-70B-Instruct",
-            token=os.environ.get("GROQ_API_KEY"),
-            provider="groq",
-            timeout=20
+        model=OpenAIServerModel(
+            model_id="qwen/qwen3.8-27b",
+            api_base="https://api.groq.com/openai/v1",
+            api_key=os.environ.get("GROQ_API_KEY"),
+            client_kwargs={"timeout": 20}
             ),
         max_steps=3
     )
@@ -82,6 +82,8 @@ def agent_search(query, agent):
         if not response:
             return []
 
+        if isinstance(response, (list, tuple)):
+            response = ", ".join(str(t) for t in response)
         raw = str(response).strip()
         print(f"Agent raw response: {raw}")
 
@@ -99,7 +101,8 @@ def agent_search(query, agent):
             )
             return [title for _, title, _ in results]
 
-        titles = [t.strip() for t in raw.replace("\n", ",").split(",") if t.strip()]
+        titles = [t.strip(" '\"[]") for t in raw.replace("\n", ",").replace(";", ",").split(",")]
+        titles = [t for t in titles if t]
 
         if len(titles) == 0:
             results = hybrid_search(

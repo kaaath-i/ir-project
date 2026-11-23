@@ -43,7 +43,7 @@ Wenn die Rezepte nicht exakt passen, sag das kurz und schlage sie trotzdem als A
 Verlink die Rezepte im Format: [Rezepttitel](https://www.kochwiki.org/wiki/Rezepttitel_mit_Unterstrichen)"""})
 
     response = generator.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="qwen/qwen3.8-27b",
         messages=messages,
         max_tokens=512
     )
